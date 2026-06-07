@@ -1,0 +1,650 @@
+import { useState, useRef, useCallback } from "react";
+
+/* ═══════════════════════════════════════════════════════════════════
+   OPPORTUNITIES CENTER — O-PROJECT ENTERPRISE
+   Gestion projets complète · Niveau Jira/Asana/Monday
+   Kanban · Gantt · Sprints · O-AI PM · GCV 1π = $314,159
+   CEO : Ulrich Bakouma · Congo Brazzaville
+═══════════════════════════════════════════════════════════════════ */
+
+const T = {
+  blue:"#1B4B8A",sky:"#29ABE2",orange:"#F07A1A",orangeLt:"#F8A252",
+  gold:"#F59E0B",goldLt:"#FCD34D",pi:"#6B21A8",piLt:"#9333EA",
+  green:"#10B981",red:"#EF4444",yellow:"#F59E0B",teal:"#00838F",
+  purple:"#7C3AED",pink:"#EC4899",
+  dark:"#07080F",s1:"#0E0F18",s2:"#14151F",s3:"#1A1B28",
+  border:"rgba(255,255,255,0.06)",border2:"rgba(255,255,255,0.11)",
+  text:"#E8E4F0",mid:"#8880A0",dim:"#45425A",
+};
+const GCV = 314159;
+const LOGO = "data:image/jpeg;base64,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";
+
+async function ai(system, user, onChunk) {
+  const r = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ model:"claude-sonnet-4-20250514", max_tokens:1000, stream:true,
+      system, messages:[{role:"user",content:user}] })
+  });
+  const reader = r.body.getReader(); const dec = new TextDecoder(); let buf="";
+  while(true){
+    const {done,value}=await reader.read(); if(done) break;
+    buf+=dec.decode(value,{stream:true});
+    const lines=buf.split("\n"); buf=lines.pop();
+    for(const l of lines){
+      if(l.startsWith("data: ")){const d=l.slice(6).trim();if(d==="[DONE]")return;
+        try{const j=JSON.parse(d);if(j?.delta?.text)onChunk(j.delta.text);}catch{}}
+    }
+  }
+}
+
+function Spin({size=16,color="#29ABE2"}){
+  return <svg width={size} height={size} viewBox="0 0 24 24" style={{animation:"spin 1s linear infinite",flexShrink:0}}>
+    <circle cx="12" cy="12" r="10" stroke={color} strokeWidth="3" fill="none" strokeDasharray="60" strokeDashoffset="20"/>
+    <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+  </svg>;
+}
+
+function Render({text}){
+  if(!text) return null;
+  return <div style={{lineHeight:1.78,fontSize:"0.84rem",color:T.text}}>
+    {text.split("\n").map((line,i)=>{
+      if(line.startsWith("## ")) return <h3 key={i} style={{color:T.sky,fontWeight:700,margin:"10px 0 4px",fontSize:"0.9rem"}}>{line.slice(3)}</h3>;
+      if(line.startsWith("### ")) return <h4 key={i} style={{color:T.orangeLt,fontWeight:700,margin:"8px 0 3px",fontSize:"0.82rem"}}>{line.slice(4)}</h4>;
+      if(line.match(/^[-•] /)) return <div key={i} style={{display:"flex",gap:8,marginBottom:3}}><span style={{color:T.orange,flexShrink:0}}>▸</span><span>{line.slice(2)}</span></div>;
+      if(line==="") return <div key={i} style={{height:6}}/>;
+      const parts=line.split(/(\*\*[^*]+\*\*)/g);
+      return <div key={i} style={{marginBottom:2}}>{parts.map((p,j)=>p.startsWith("**")&&p.endsWith("**")?<strong key={j} style={{color:T.sky}}>{p.slice(2,-2)}</strong>:p)}</div>;
+    })}
+  </div>;
+}
+
+// ── PROJECTS DATA ──────────────────────────────────────────────
+const INITIAL_PROJECTS = [
+  {
+    id:1, name:"Lancement O-Series v2", code:"OSV2", color:"#1B4B8A",
+    status:"En cours", priority:"Critique", progress:68,
+    start:"2025-10-01", end:"2026-01-31", budget_fcfa:5000000, budget_pi:0.01591,
+    team:["UB","AM","MH","PN"], manager:"Ulrich Bakouma",
+    desc:"Déploiement complet de la suite O-Series avec 54 DApps enterprise sur Pi Network.",
+    tags:["Pi Network","IA","O-AI","Enterprise"],
+    sprints:[
+      {id:"s1",name:"Sprint 1 — Architecture",status:"Terminé",points:34},
+      {id:"s2",name:"Sprint 2 — O-Mail & O-Chat",status:"Terminé",points:28},
+      {id:"s3",name:"Sprint 3 — O-Commerce",status:"En cours",points:21},
+      {id:"s4",name:"Sprint 4 — O-Wallet Pi",status:"À faire",points:25},
+    ],
+    tasks:[
+      {id:"t1",title:"Design système O-AI",status:"done",priority:"haute",assignee:"MH",points:8},
+      {id:"t2",title:"API Pi SDK intégration",status:"done",priority:"critique",assignee:"PN",points:13},
+      {id:"t3",title:"O-Commerce boutique",status:"in_progress",priority:"haute",assignee:"PN",points:8},
+      {id:"t4",title:"Tests paiement Pi Sandbox",status:"in_progress",priority:"critique",assignee:"MH",points:5},
+      {id:"t5",title:"O-Wallet OCT Token",status:"todo",priority:"haute",assignee:"UB",points:13},
+      {id:"t6",title:"Documentation API",status:"todo",priority:"normale",assignee:"AM",points:5},
+      {id:"t7",title:"Deploy Pi Mainnet",status:"todo",priority:"critique",assignee:"UB",points:21},
+      {id:"t8",title:"Marketing campagne Pi",status:"todo",priority:"normale",assignee:"SM",points:8},
+    ]
+  },
+  {
+    id:2, name:"Integration Mobile Money", code:"IMM1", color:"#E65100",
+    status:"En cours", priority:"Haute", progress:42,
+    start:"2025-11-01", end:"2026-03-31", budget_fcfa:2000000, budget_pi:0.00636,
+    team:["UB","AM","CB"], manager:"Antonin Mougani",
+    desc:"Intégration Airtel Money, MTN MoMo, Orange Money pour les zones BEAC et BCEAO.",
+    tags:["Mobile Money","BEAC","BCEAO","Airtel","MTN"],
+    sprints:[
+      {id:"s1",name:"Sprint 1 — API Airtel Congo",status:"Terminé",points:20},
+      {id:"s2",name:"Sprint 2 — MTN MoMo",status:"En cours",points:18},
+      {id:"s3",name:"Sprint 3 — Orange & Wave",status:"À faire",points:22},
+    ],
+    tasks:[
+      {id:"t1",title:"Contrat partenariat Airtel",status:"done",priority:"haute",assignee:"UB",points:3},
+      {id:"t2",title:"API Airtel Money Congo",status:"done",priority:"critique",assignee:"MH",points:13},
+      {id:"t3",title:"Tests transactions Airtel",status:"in_progress",priority:"haute",assignee:"PN",points:8},
+      {id:"t4",title:"API MTN MoMo",status:"in_progress",priority:"haute",assignee:"PN",points:13},
+      {id:"t5",title:"Interface paiement UI",status:"todo",priority:"normale",assignee:"SM",points:8},
+      {id:"t6",title:"Tests zone BCEAO",status:"todo",priority:"haute",assignee:"AM",points:5},
+    ]
+  },
+  {
+    id:3, name:"OC TV — Streaming Congo", code:"OCTV", color:"#AD1457",
+    status:"Planifié", priority:"Normale", progress:15,
+    start:"2026-01-01", end:"2026-06-30", budget_fcfa:8000000, budget_pi:0.02545,
+    team:["UB","SM","GN"], manager:"Sarah Moukala",
+    desc:"Plateforme streaming vidéo OC TV pour le Congo et l'Afrique centrale. Contenus locaux.",
+    tags:["Streaming","OC TV","Vidéo","Contenu local"],
+    sprints:[
+      {id:"s1",name:"Sprint 1 — Architecture streaming",status:"À faire",points:30},
+      {id:"s2",name:"Sprint 2 — Player vidéo",status:"À faire",points:25},
+      {id:"s3",name:"Sprint 3 — Monétisation Pi",status:"À faire",points:20},
+    ],
+    tasks:[
+      {id:"t1",title:"Étude de marché OC TV",status:"done",priority:"haute",assignee:"SM",points:5},
+      {id:"t2",title:"Choix technologie streaming",status:"in_progress",priority:"haute",assignee:"MH",points:8},
+      {id:"t3",title:"Partenariats contenus Congo",status:"todo",priority:"normale",assignee:"UB",points:5},
+      {id:"t4",title:"Infrastructure CDN Afrique",status:"todo",priority:"critique",assignee:"PN",points:13},
+      {id:"t5",title:"Monétisation via Pi",status:"todo",priority:"haute",assignee:"AM",points:8},
+    ]
+  },
+  {
+    id:4, name:"OCT Token Launch", code:"OCTK", color:"#F07A1A",
+    status:"En cours", priority:"Critique", progress:35,
+    start:"2025-11-15", end:"2026-02-28", budget_fcfa:3000000, budget_pi:0.00954,
+    team:["UB","AM","MH"], manager:"Ulrich Bakouma",
+    desc:"Lancement officiel du token OCT sur blockchain Pi. Staking, mining, tokenomics.",
+    tags:["OCT","Token","Blockchain Pi","DeFi","Staking"],
+    sprints:[
+      {id:"s1",name:"Sprint 1 — Smart contract OCT",status:"En cours",points:34},
+      {id:"s2",name:"Sprint 2 — Staking système",status:"À faire",points:28},
+      {id:"s3",name:"Sprint 3 — Listing PiDEX",status:"À faire",points:21},
+    ],
+    tasks:[
+      {id:"t1",title:"Tokenomics design",status:"done",priority:"critique",assignee:"UB",points:8},
+      {id:"t2",title:"Smart contract OCT Pi",status:"in_progress",priority:"critique",assignee:"MH",points:21},
+      {id:"t3",title:"Système staking Pi→OCT",status:"in_progress",priority:"haute",assignee:"PN",points:13},
+      {id:"t4",title:"Interface O-Wallet OCT",status:"todo",priority:"haute",assignee:"PN",points:8},
+      {id:"t5",title:"Audit sécurité token",status:"todo",priority:"critique",assignee:"AM",points:13},
+      {id:"t6",title:"Listing PiDEX",status:"todo",priority:"haute",assignee:"UB",points:5},
+    ]
+  },
+];
+
+const MEMBERS = {
+  "UB":{name:"Ulrich Bakouma",color:"#1B4B8A"},
+  "AM":{name:"Antonin Mougani",color:"#6B21A8"},
+  "MH":{name:"Medhi Houatoma",color:"#0D47A1"},
+  "SM":{name:"Sarah Moukala",color:"#AD1457"},
+  "PN":{name:"Patrick Nganga",color:"#00695C"},
+  "CB":{name:"Christelle Bouya",color:"#2E7D32"},
+  "GN":{name:"Grâce Nkounkou",color:"#4527A0"},
+};
+
+const PRIORITY_COLORS = {critique:T.red,haute:T.orange,normale:T.yellow,basse:T.green};
+const STATUS_COLORS = {"En cours":T.sky,"Terminé":T.green,"Planifié":T.mid,"Bloqué":T.red};
+
+// ── HELPERS ───────────────────────────────────────────────────
+function Avatar({code,size=28}){
+  const m = MEMBERS[code];
+  if(!m) return null;
+  return <div title={m.name} style={{width:size,height:size,borderRadius:"50%",background:`linear-gradient(135deg,${m.color},${m.color}88)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*0.3,fontWeight:800,color:"white",flexShrink:0,border:`2px solid ${T.dark}`}}>{code}</div>;
+}
+
+function PriorityBadge({p}){
+  const c=PRIORITY_COLORS[p]||T.mid;
+  return <span style={{padding:"1px 7px",borderRadius:8,background:c+"18",border:`1px solid ${c}40`,color:c,fontSize:"0.58rem",fontWeight:700,textTransform:"capitalize"}}>{p}</span>;
+}
+
+function StatusBadge({s}){
+  const c=STATUS_COLORS[s]||T.mid;
+  return <span style={{padding:"2px 8px",borderRadius:8,background:c+"18",border:`1px solid ${c}40`,color:c,fontSize:"0.62rem",fontWeight:700}}>{s}</span>;
+}
+
+function ProgressBar({pct,color=T.sky}){
+  return <div style={{height:6,background:T.border,borderRadius:3,overflow:"hidden"}}>
+    <div style={{height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${color},${color}88)`,borderRadius:3,transition:"width 0.5s"}}/>
+  </div>;
+}
+
+// ── KANBAN BOARD ───────────────────────────────────────────────
+function KanbanBoard({project, onUpdate}){
+  const cols = [
+    {id:"todo",label:"À faire",color:T.mid,icon:"📋"},
+    {id:"in_progress",label:"En cours",color:T.sky,icon:"⚡"},
+    {id:"review",label:"Review",color:T.orange,icon:"🔍"},
+    {id:"done",label:"Terminé",color:T.green,icon:"✅"},
+  ];
+  const [tasks,setTasks]=useState(project.tasks);
+  const [aiOut,setAiOut]=useState(""); const [aiLoading,setAiLoading]=useState(false);
+  const [newTask,setNewTask]=useState("");
+
+  const moveTask = (taskId, newStatus) => {
+    setTasks(ts=>ts.map(t=>t.id===taskId?{...t,status:newStatus}:t));
+  };
+
+  const addTask = () => {
+    if(!newTask.trim()) return;
+    const t = {id:"t"+(tasks.length+1),title:newTask,status:"todo",priority:"normale",assignee:"UB",points:3};
+    setTasks(ts=>[...ts,t]);
+    setNewTask("");
+  };
+
+  const genTasks = async () => {
+    setAiLoading(true); setAiOut("");
+    await ai(
+      "Tu es O-Project, expert gestion de projet agile pour OC Congo. Génère des tâches Scrum précises et actionnables.",
+      `Génère 5 nouvelles tâches prioritaires pour le projet "${project.name}". Description: ${project.desc}. Format: - [Titre] (points: X, priorité: haute/normale/critique)`,
+      c=>setAiOut(o=>o+c)
+    );
+    setAiLoading(false);
+  };
+
+  return <div>
+    <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
+      <input value={newTask} onChange={e=>setNewTask(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addTask()}
+        placeholder="Nouvelle tâche..."
+        style={{flex:1,minWidth:180,padding:"8px 12px",borderRadius:8,border:`1px solid ${T.border}`,background:"rgba(255,255,255,0.04)",color:T.text,fontFamily:"inherit",fontSize:"0.82rem",outline:"none"}}/>
+      <button onClick={addTask} style={{padding:"8px 14px",borderRadius:8,background:`linear-gradient(135deg,${T.blue},${T.sky})`,border:"none",color:"white",cursor:"pointer",fontWeight:700,fontSize:"0.78rem"}}>+ Ajouter</button>
+      <button onClick={genTasks} disabled={aiLoading} style={{padding:"8px 14px",borderRadius:8,background:"rgba(41,171,226,0.1)",border:`1px solid ${T.sky}33`,color:T.sky,cursor:"pointer",fontWeight:700,fontSize:"0.78rem",display:"flex",alignItems:"center",gap:5}}>
+        {aiLoading?<><Spin size={12} color={T.sky}/>O-AI...</>:"✨ O-AI Tâches"}
+      </button>
+    </div>
+    {aiOut&&<div style={{background:T.s1,borderRadius:10,padding:12,border:`1px solid ${T.border2}`,marginBottom:12,fontSize:"0.78rem",color:T.text,lineHeight:1.7}}>{aiOut}</div>}
+
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:10}}>
+      {cols.map(col=>(
+        <div key={col.id} style={{background:T.s2,borderRadius:12,padding:"10px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:10,padding:"6px 8px",background:`${col.color}12`,borderRadius:8}}>
+            <span>{col.icon}</span>
+            <span style={{fontWeight:700,fontSize:"0.78rem",color:col.color}}>{col.label}</span>
+            <span style={{marginLeft:"auto",background:`${col.color}25`,color:col.color,borderRadius:10,padding:"0px 7px",fontSize:"0.65rem",fontWeight:800}}>
+              {tasks.filter(t=>t.status===col.id).length}
+            </span>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",gap:7,minHeight:60}}>
+            {tasks.filter(t=>t.status===col.id).map(task=>(
+              <div key={task.id} style={{background:T.s1,borderRadius:9,padding:"10px 11px",border:`1px solid ${T.border}`,cursor:"grab"}}>
+                <div style={{fontSize:"0.78rem",fontWeight:600,color:T.text,marginBottom:6,lineHeight:1.4}}>{task.title}</div>
+                <div style={{display:"flex",align:"center",gap:5,flexWrap:"wrap",marginBottom:6}}>
+                  <PriorityBadge p={task.priority}/>
+                  <span style={{fontSize:"0.6rem",color:T.dim,background:T.s2,padding:"1px 6px",borderRadius:5}}>{task.points}pts</span>
+                </div>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <Avatar code={task.assignee} size={22}/>
+                  <div style={{display:"flex",gap:3}}>
+                    {col.id!=="done"&&<button onClick={()=>moveTask(task.id,col.id==="todo"?"in_progress":col.id==="in_progress"?"review":"done")}
+                      style={{padding:"2px 7px",borderRadius:5,background:`${col.color}15`,border:`1px solid ${col.color}33`,color:col.color,cursor:"pointer",fontSize:"0.6rem",fontWeight:600}}>→</button>}
+                    {col.id!=="todo"&&<button onClick={()=>moveTask(task.id,col.id==="in_progress"?"todo":col.id==="review"?"in_progress":"review")}
+                      style={{padding:"2px 7px",borderRadius:5,background:"rgba(255,255,255,0.04)",border:`1px solid ${T.border}`,color:T.mid,cursor:"pointer",fontSize:"0.6rem"}}>←</button>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>;
+}
+
+// ── GANTT ──────────────────────────────────────────────────────
+function GanttView({project}){
+  const start = new Date(project.start);
+  const end = new Date(project.end);
+  const totalDays = Math.ceil((end-start)/(1000*60*60*24));
+  const today = new Date();
+  const elapsed = Math.ceil((today-start)/(1000*60*60*24));
+  const months = [];
+  let cur = new Date(start);
+  while(cur<=end){
+    months.push(cur.toLocaleDateString("fr-FR",{month:"short",year:"2-digit"}));
+    cur = new Date(cur.getFullYear(), cur.getMonth()+1, 1);
+  }
+
+  const sprintDays = Math.floor(totalDays / project.sprints.length);
+
+  return <div>
+    <div style={{background:T.s1,border:`1px solid ${T.border}`,borderRadius:12,padding:16,marginBottom:12}}>
+      <div style={{fontWeight:700,fontSize:"0.88rem",marginBottom:14}}>📅 Diagramme de Gantt — {project.name}</div>
+
+      {/* Timeline header */}
+      <div style={{display:"flex",marginBottom:6,gap:0}}>
+        <div style={{width:120,flexShrink:0}}/>
+        <div style={{flex:1,display:"flex"}}>
+          {months.map((m,i)=>(
+            <div key={i} style={{flex:1,textAlign:"center",fontSize:"0.6rem",color:T.mid,fontWeight:600,textTransform:"uppercase",borderLeft:`1px solid ${T.border}`,padding:"2px 0"}}>{m}</div>
+          ))}
+        </div>
+      </div>
+
+      {/* Today line */}
+      <div style={{position:"relative"}}>
+        {/* Sprint rows */}
+        {project.sprints.map((sprint,si)=>{
+          const sprintStart = si * sprintDays;
+          const leftPct = (sprintStart/totalDays)*100;
+          const widthPct = (sprintDays/totalDays)*100;
+          const sc = sprint.status==="Terminé"?T.green:sprint.status==="En cours"?T.sky:T.mid;
+          return <div key={sprint.id} style={{display:"flex",alignItems:"center",gap:0,marginBottom:8}}>
+            <div style={{width:120,flexShrink:0,fontSize:"0.68rem",color:T.mid,paddingRight:8,textAlign:"right",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{sprint.name.split("—")[0]}</div>
+            <div style={{flex:1,position:"relative",height:24,background:T.s2,borderRadius:4}}>
+              <div style={{position:"absolute",left:`${leftPct}%`,width:`${widthPct}%`,height:"100%",background:`linear-gradient(90deg,${sc},${sc}88)`,borderRadius:4,display:"flex",alignItems:"center",paddingLeft:6}}>
+                <span style={{fontSize:"0.6rem",color:"white",fontWeight:700,whiteSpace:"nowrap",overflow:"hidden"}}>{sprint.status}</span>
+              </div>
+              {/* Today marker */}
+              {elapsed>0&&elapsed<totalDays&&<div style={{position:"absolute",left:`${(elapsed/totalDays)*100}%`,top:0,bottom:0,width:2,background:T.red,borderRadius:1}}/>}
+            </div>
+          </div>;
+        })}
+
+        {/* Overall progress bar */}
+        <div style={{display:"flex",alignItems:"center",gap:0,marginTop:10}}>
+          <div style={{width:120,flexShrink:0,fontSize:"0.68rem",color:T.orange,fontWeight:700,textAlign:"right",paddingRight:8}}>Progression</div>
+          <div style={{flex:1,height:10,background:T.s2,borderRadius:5,overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${project.progress}%`,background:`linear-gradient(90deg,${project.color},${project.color}88)`,borderRadius:5}}/>
+          </div>
+          <span style={{marginLeft:8,fontSize:"0.72rem",fontWeight:700,color:T.text,flexShrink:0}}>{project.progress}%</span>
+        </div>
+      </div>
+    </div>
+
+    {/* Sprint details */}
+    <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>
+      {project.sprints.map(sprint=>(
+        <div key={sprint.id} style={{background:T.s1,border:`1px solid ${T.border}`,borderRadius:10,padding:12}}>
+          <div style={{fontWeight:700,fontSize:"0.78rem",marginBottom:5,color:T.text}}>{sprint.name}</div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <span style={{padding:"2px 8px",borderRadius:8,background:sprint.status==="Terminé"?"rgba(16,185,129,0.15)":sprint.status==="En cours"?"rgba(41,171,226,0.15)":"rgba(255,255,255,0.05)",
+              color:sprint.status==="Terminé"?T.green:sprint.status==="En cours"?T.sky:T.mid,fontSize:"0.62rem",fontWeight:700}}>{sprint.status}</span>
+            <span style={{fontSize:"0.7rem",color:T.goldLt,fontWeight:700}}>{sprint.points} pts</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>;
+}
+
+// ── PROJECT DETAIL ─────────────────────────────────────────────
+function ProjectDetail({project, onBack}){
+  const [tab,setTab]=useState("kanban");
+  const [aiOut,setAiOut]=useState(""); const [aiLoading,setAiLoading]=useState(false);
+
+  const runAI = async (prompt) => {
+    setAiLoading(true); setAiOut("");
+    await ai(
+      `Tu es O-Project, expert chef de projet pour Opportunities Center Congo. Projet: "${project.name}". ${project.desc}`,
+      prompt, c=>setAiOut(o=>o+c)
+    );
+    setAiLoading(false);
+  };
+
+  const done = project.tasks.filter(t=>t.status==="done").length;
+  const velocity = project.sprints.reduce((s,sp)=>s+sp.points,0) / project.sprints.length;
+
+  return <div style={{minHeight:"100vh",background:T.dark,color:T.text,fontFamily:"'DM Sans','Segoe UI',sans-serif"}}>
+    <style>{`*{box-sizing:border-box;margin:0;padding:0;}`}</style>
+
+    {/* Header */}
+    <div style={{background:`linear-gradient(135deg,${project.color}88,${project.color}33)`,padding:"16px 18px 0",borderBottom:`1px solid ${T.border}`}}>
+      <button onClick={onBack} style={{background:"rgba(0,0,0,0.3)",border:"none",color:"white",borderRadius:8,padding:"6px 12px",cursor:"pointer",fontSize:"0.75rem",marginBottom:12}}>← Projets</button>
+      <div style={{display:"flex",gap:12,alignItems:"flex-start",marginBottom:14,flexWrap:"wrap"}}>
+        <div style={{flex:1}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6,flexWrap:"wrap"}}>
+            <span style={{background:"rgba(0,0,0,0.3)",color:"white",fontSize:"0.65rem",fontWeight:700,padding:"2px 8px",borderRadius:5,fontFamily:"monospace"}}>{project.code}</span>
+            <StatusBadge s={project.status}/>
+            <PriorityBadge p={project.priority}/>
+          </div>
+          <h2 style={{fontSize:"1.3rem",fontWeight:900,color:"white",marginBottom:4}}>{project.name}</h2>
+          <p style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.55)",lineHeight:1.6,marginBottom:10}}>{project.desc}</p>
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            {project.tags.map((tag,i)=><span key={i} style={{padding:"2px 8px",borderRadius:10,background:"rgba(255,255,255,0.1)",color:"rgba(255,255,255,0.6)",fontSize:"0.62rem"}}>{tag}</span>)}
+          </div>
+        </div>
+        <div style={{background:"rgba(0,0,0,0.3)",borderRadius:12,padding:"12px 16px",minWidth:160}}>
+          <div style={{fontSize:"0.6rem",color:"rgba(255,255,255,0.4)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>Budget</div>
+          <div style={{fontWeight:900,fontSize:"0.95rem",color:T.goldLt}}>π {project.budget_pi.toFixed(5)}</div>
+          <div style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.4)",marginTop:2}}>{project.budget_fcfa.toLocaleString("fr-FR")} FCFA</div>
+          <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.3)",marginTop:1}}>${(project.budget_pi*GCV).toFixed(0)} GCV</div>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div style={{display:"flex",gap:8,marginBottom:0,flexWrap:"wrap"}}>
+        {[
+          {n:project.tasks.length,l:"Tâches",c:T.text},
+          {n:done,l:"Terminées",c:T.green},
+          {n:project.sprints.length,l:"Sprints",c:T.sky},
+          {n:project.progress+"%",l:"Progression",c:project.color},
+          {n:velocity.toFixed(0)+"pts",l:"Vélocité",c:T.goldLt},
+        ].map((s,i)=>(
+          <div key={i} style={{background:"rgba(0,0,0,0.3)",borderRadius:9,padding:"8px 12px",textAlign:"center"}}>
+            <div style={{fontWeight:900,fontSize:"0.92rem",color:s.c}}>{s.n}</div>
+            <div style={{fontSize:"0.58rem",color:"rgba(255,255,255,0.35)",marginTop:2,textTransform:"uppercase",letterSpacing:"0.08em"}}>{s.l}</div>
+          </div>
+        ))}
+        {/* Team */}
+        <div style={{background:"rgba(0,0,0,0.3)",borderRadius:9,padding:"8px 12px",display:"flex",alignItems:"center",gap:4}}>
+          {project.team.map((m,i)=><div key={i} style={{marginLeft:i>0?-8:0}}><Avatar code={m} size={26}/></div>)}
+        </div>
+      </div>
+
+      {/* Progress */}
+      <div style={{padding:"10px 0 0"}}>
+        <ProgressBar pct={project.progress} color={project.color}/>
+      </div>
+
+      {/* Tabs */}
+      <div style={{display:"flex",gap:0,marginTop:10,overflowX:"auto",scrollbarWidth:"none"}}>
+        {["kanban","gantt","backlog","o-ai"].map(t=>(
+          <button key={t} onClick={()=>setTab(t)} style={{padding:"10px 16px",border:"none",borderBottom:`2px solid ${tab===t?"white":"transparent"}`,
+            background:"transparent",color:tab===t?"white":"rgba(255,255,255,0.45)",cursor:"pointer",fontWeight:tab===t?700:400,fontSize:"0.75rem",whiteSpace:"nowrap"}}>
+            {t==="kanban"?"📋 Kanban":t==="gantt"?"📅 Gantt":t==="backlog"?"📝 Backlog":"✨ O-AI PM"}
+          </button>
+        ))}
+      </div>
+    </div>
+
+    <div style={{maxWidth:1000,margin:"0 auto",padding:"16px 14px 60px"}}>
+      {tab==="kanban"&&<KanbanBoard project={project}/>}
+      {tab==="gantt"&&<GanttView project={project}/>}
+
+      {tab==="backlog"&&<div>
+        <div style={{background:T.s1,border:`1px solid ${T.border}`,borderRadius:12,overflow:"hidden"}}>
+          <div style={{padding:"11px 14px",background:T.s2,fontWeight:700,fontSize:"0.82rem",display:"flex",justifyContent:"space-between"}}>
+            <span>📝 Product Backlog — {project.name}</span>
+            <span style={{fontSize:"0.7rem",color:T.mid}}>Total: {project.tasks.reduce((s,t)=>s+t.points,0)} story points</span>
+          </div>
+          {project.tasks.map((task,i)=>(
+            <div key={task.id} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 14px",borderBottom:`1px solid ${T.border}`}}>
+              <div style={{width:6,height:6,borderRadius:"50%",background:task.status==="done"?T.green:task.status==="in_progress"?T.sky:T.dim,flexShrink:0}}/>
+              <div style={{flex:1}}>
+                <div style={{fontSize:"0.82rem",fontWeight:600,color:T.text}}>{task.title}</div>
+              </div>
+              <PriorityBadge p={task.priority}/>
+              <span style={{fontSize:"0.68rem",color:T.goldLt,fontWeight:700,background:"rgba(245,158,11,0.1)",padding:"2px 7px",borderRadius:5}}>{task.points}pts</span>
+              <Avatar code={task.assignee} size={24}/>
+              <span style={{fontSize:"0.65rem",color:task.status==="done"?T.green:task.status==="in_progress"?T.sky:T.mid,fontWeight:600,minWidth:60,textAlign:"right"}}>
+                {task.status==="done"?"Terminé":task.status==="in_progress"?"En cours":"À faire"}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>}
+
+      {tab==="o-ai"&&<div>
+        <div style={{background:`linear-gradient(135deg,rgba(107,33,168,0.15),rgba(27,75,138,0.1))`,border:`1px solid rgba(107,33,168,0.3)`,borderRadius:12,padding:16,marginBottom:12}}>
+          <div style={{fontWeight:700,fontSize:"0.88rem",marginBottom:12}}>✨ O-AI Chef de Projet — {project.name}</div>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
+            {[
+              `Analyse les risques du projet ${project.name}`,
+              `Plan de communication équipe pour ${project.code}`,
+              `Rapport d'avancement ${project.progress}% pour investisseurs`,
+              `Rétrospective sprint agile`,
+              `Plan de mitigation des risques`,
+              `Estimation budget restant`,
+              `Recommandations pour accélérer`,
+              `Rapport KPI projet`,
+            ].map((p,i)=>(
+              <button key={i} onClick={()=>runAI(p)} style={{padding:"5px 10px",borderRadius:14,background:"rgba(255,255,255,0.04)",
+                border:`1px solid ${T.border}`,color:T.mid,cursor:"pointer",fontSize:"0.68rem",transition:"all 0.2s"}}
+                onMouseEnter={e=>{e.target.style.borderColor=T.pi;e.target.style.color=T.piLt;}}
+                onMouseLeave={e=>{e.target.style.borderColor=T.border;e.target.style.color=T.mid;}}>{p.slice(0,40)}...</button>
+            ))}
+          </div>
+          {aiLoading&&<div style={{display:"flex",alignItems:"center",gap:8,color:T.sky,fontSize:"0.78rem",marginBottom:8}}><Spin size={14} color={T.sky}/>O-AI PM analyse...</div>}
+        </div>
+        {aiOut&&<div style={{background:T.s1,borderRadius:12,padding:16,border:`1px solid ${T.border2}`}}><Render text={aiOut}/></div>}
+      </div>}
+    </div>
+  </div>;
+}
+
+// ── PROJECT CARD ───────────────────────────────────────────────
+function ProjectCard({p, onView}){
+  const [hov,setHov]=useState(false);
+  const done = p.tasks.filter(t=>t.status==="done").length;
+  return <div onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)} onClick={()=>onView(p)}
+    style={{background:T.s1,border:`1.5px solid ${hov?p.color+"55":T.border}`,borderRadius:14,padding:"16px",cursor:"pointer",
+      transition:"all 0.25s",transform:hov?"translateY(-4px)":"none",boxShadow:hov?`0 12px 32px ${p.color}22`:"none"}}>
+    {hov&&<div style={{height:3,background:`linear-gradient(90deg,${p.color},${p.color}88)`,borderRadius:3,marginBottom:12}}/>}
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+      <div>
+        <span style={{fontFamily:"monospace",fontSize:"0.62rem",color:p.color,fontWeight:700,background:`${p.color}15`,padding:"1px 6px",borderRadius:4}}>{p.code}</span>
+        <StatusBadge s={p.status}/>
+      </div>
+      <PriorityBadge p={p.priority}/>
+    </div>
+    <h3 style={{fontWeight:800,fontSize:"0.95rem",color:T.text,marginBottom:5,lineHeight:1.3}}>{p.name}</h3>
+    <p style={{fontSize:"0.72rem",color:T.mid,lineHeight:1.55,marginBottom:10,display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>{p.desc}</p>
+    
+    <div style={{marginBottom:10}}>
+      <div style={{display:"flex",justifyContent:"space-between",marginBottom:4,fontSize:"0.68rem"}}>
+        <span style={{color:T.mid}}>Progression</span>
+        <span style={{color:p.color,fontWeight:700}}>{p.progress}%</span>
+      </div>
+      <ProgressBar pct={p.progress} color={p.color}/>
+    </div>
+
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+      <div style={{display:"flex",gap:4}}>
+        {p.team.map((m,i)=><div key={i} style={{marginLeft:i>0?-6:0}}><Avatar code={m} size={24}/></div>)}
+      </div>
+      <div style={{display:"flex",gap:8,fontSize:"0.68rem",color:T.dim}}>
+        <span>✅ {done}/{p.tasks.length}</span>
+        <span>📅 {p.sprints.length} sprints</span>
+      </div>
+    </div>
+
+    <div style={{marginTop:10,display:"flex",justifyContent:"space-between",fontSize:"0.68rem"}}>
+      <span style={{color:T.goldLt,fontWeight:700}}>π {p.budget_pi.toFixed(5)}</span>
+      <span style={{color:T.dim}}>{p.budget_fcfa.toLocaleString("fr-FR")} FCFA</span>
+    </div>
+  </div>;
+}
+
+// ── MAIN ──────────────────────────────────────────────────────
+export default function OProjectEnterprise(){
+  const [projects,setProjects]=useState(INITIAL_PROJECTS);
+  const [detail,setDetail]=useState(null);
+  const [filter,setFilter]=useState("Tous");
+  const [search,setSearch]=useState("");
+  const [aiOut,setAiOut]=useState(""); const [aiLoading,setAiLoading]=useState(false);
+  const [showNew,setShowNew]=useState(false);
+  const [newProj,setNewProj]=useState({name:"",desc:""});
+  const [notification,setNotification]=useState(null);
+
+  const notify = msg=>{setNotification(msg);setTimeout(()=>setNotification(null),2500);};
+
+  const genPlan = async () => {
+    if(!newProj.name) return;
+    setAiLoading(true); setAiOut("");
+    await ai(
+      "Tu es O-Project, expert chef de projet pour OC Congo. Génère des plans de projet complets et réalistes.",
+      `Crée un plan de projet complet pour: "${newProj.name}". ${newProj.desc}. Inclus: objectifs SMART, sprints (4-6), tâches clés, risques, budget estimé en FCFA et Pi (GCV $314,159), timeline, équipe recommandée.`,
+      c=>setAiOut(o=>o+c)
+    );
+    setAiLoading(false);
+  };
+
+  const filtered = projects.filter(p=>(filter==="Tous"||p.status===filter)&&(p.name.toLowerCase().includes(search.toLowerCase())||p.code.toLowerCase().includes(search.toLowerCase())));
+
+  const totalBudgetPi = projects.reduce((s,p)=>s+p.budget_pi,0);
+  const avgProgress = Math.round(projects.reduce((s,p)=>s+p.progress,0)/projects.length);
+
+  if(detail) return <ProjectDetail project={detail} onBack={()=>setDetail(null)}/>;
+
+  return (
+    <div style={{minHeight:"100vh",background:T.dark,color:T.text,fontFamily:"'DM Sans','Segoe UI',sans-serif"}}>
+      <style>{`*{box-sizing:border-box;margin:0;padding:0;}::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:${T.dim};border-radius:2px;}@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}`}</style>
+
+      {notification&&<div style={{position:"fixed",top:14,left:"50%",transform:"translateX(-50%)",zIndex:9999,background:"rgba(16,185,129,0.95)",color:"white",padding:"9px 18px",borderRadius:10,fontWeight:600,fontSize:"0.8rem",boxShadow:"0 4px 20px rgba(0,0,0,0.4)",animation:"slideIn 0.3s ease"}}>{notification}</div>}
+
+      {/* NAV */}
+      <nav style={{background:"rgba(0,0,0,0.7)",backdropFilter:"blur(12px)",padding:"0 16px",height:54,display:"flex",alignItems:"center",gap:10,borderBottom:`1px solid ${T.border}`,position:"sticky",top:0,zIndex:200}}>
+        <div style={{width:36,height:36,borderRadius:"50%",overflow:"hidden",background:"white",border:`2px solid ${T.orange}`,flexShrink:0}}>
+          <img src={LOGO} alt="OC" style={{width:"100%",height:"100%",objectFit:"contain"}}/>
+        </div>
+        <div style={{flex:1}}>
+          <div style={{fontWeight:800,fontSize:"0.9rem"}}>O-Project</div>
+          <div style={{fontSize:"0.52rem",color:T.mid,letterSpacing:"0.1em"}}>OPPORTUNITIES CENTER · PM ENTERPRISE</div>
+        </div>
+        <button onClick={()=>setShowNew(s=>!s)} style={{padding:"7px 14px",borderRadius:9,background:`linear-gradient(135deg,${T.blue},${T.sky})`,border:"none",color:"white",cursor:"pointer",fontWeight:700,fontSize:"0.78rem"}}>
+          + Nouveau projet
+        </button>
+      </nav>
+
+      {/* HERO */}
+      <div style={{background:"linear-gradient(135deg,rgba(27,75,138,0.6),rgba(124,58,237,0.3))",padding:"22px 18px",borderBottom:`1px solid ${T.border}`}}>
+        <div style={{maxWidth:900,margin:"0 auto"}}>
+          <h1 style={{fontSize:"clamp(1.2rem,3vw,1.8rem)",fontWeight:900,color:"white",marginBottom:6}}>O-Project Enterprise</h1>
+          <p style={{color:"rgba(255,255,255,0.45)",fontSize:"0.78rem",marginBottom:14}}>Kanban · Gantt · Sprints Agile · Budget Pi + FCFA · O-AI Chef de Projet</p>
+
+          {/* Global stats */}
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {[{n:projects.length,l:"Projets",c:T.orangeLt},{n:projects.filter(p=>p.status==="En cours").length,l:"En cours",c:T.sky},
+              {n:avgProgress+"%",l:"Moy. avancement",c:T.green},{n:"π "+totalBudgetPi.toFixed(4),l:"Budget total Pi",c:T.goldLt},
+              {n:"$"+(totalBudgetPi*GCV).toFixed(0),l:"Valeur GCV",c:T.teal}].map((s,i)=>(
+              <div key={i} style={{background:"rgba(0,0,0,0.3)",border:`1px solid ${T.border}`,borderRadius:10,padding:"9px 14px",textAlign:"center"}}>
+                <div style={{color:s.c,fontWeight:900,fontSize:"0.92rem"}}>{s.n}</div>
+                <div style={{color:"rgba(255,255,255,0.3)",fontSize:"0.58rem",marginTop:2,textTransform:"uppercase",letterSpacing:"0.08em"}}>{s.l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{maxWidth:900,margin:"0 auto",padding:"16px 14px 60px"}}>
+
+        {/* NEW PROJECT PANEL */}
+        {showNew&&<div style={{background:T.s1,border:`1px solid ${T.border2}`,borderRadius:12,padding:16,marginBottom:14}}>
+          <div style={{fontWeight:700,fontSize:"0.88rem",marginBottom:12}}>✨ Nouveau projet avec O-AI</div>
+          <input value={newProj.name} onChange={e=>setNewProj(p=>({...p,name:e.target.value}))} placeholder="Nom du projet..."
+            style={{width:"100%",padding:"9px 12px",borderRadius:8,border:`1px solid ${T.border}`,background:"rgba(255,255,255,0.04)",color:T.text,fontFamily:"inherit",fontSize:"0.82rem",outline:"none",marginBottom:8,boxSizing:"border-box"}}/>
+          <textarea value={newProj.desc} onChange={e=>setNewProj(p=>({...p,desc:e.target.value}))} placeholder="Description du projet..."
+            style={{width:"100%",padding:"9px 12px",borderRadius:8,border:`1px solid ${T.border}`,background:"rgba(255,255,255,0.04)",color:T.text,fontFamily:"inherit",fontSize:"0.82rem",outline:"none",resize:"vertical",minHeight:60,marginBottom:8,boxSizing:"border-box"}}/>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={genPlan} disabled={aiLoading||!newProj.name} style={{flex:1,padding:10,borderRadius:9,background:`linear-gradient(135deg,${T.pi},${T.piLt})`,border:"none",color:"white",cursor:"pointer",fontWeight:700,fontSize:"0.82rem",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}>
+              {aiLoading?<><Spin size={14} color="white"/>O-AI génère le plan...</>:"✨ O-AI — Générer le plan projet"}
+            </button>
+            <button onClick={()=>setShowNew(false)} style={{padding:10,borderRadius:9,border:`1px solid ${T.border}`,background:"transparent",color:T.mid,cursor:"pointer",fontSize:"0.82rem"}}>Annuler</button>
+          </div>
+          {aiOut&&<div style={{marginTop:10,background:T.s2,borderRadius:10,padding:14,border:`1px solid ${T.border2}`}}><Render text={aiOut}/></div>}
+        </div>}
+
+        {/* FILTERS */}
+        <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap"}}>
+          <div style={{position:"relative",flex:1,minWidth:180}}>
+            <span style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",opacity:0.35}}>🔍</span>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Rechercher un projet..."
+              style={{width:"100%",padding:"8px 12px 8px 30px",borderRadius:8,border:`1px solid ${T.border}`,background:"rgba(255,255,255,0.04)",color:T.text,fontFamily:"inherit",fontSize:"0.8rem",outline:"none",boxSizing:"border-box"}}/>
+          </div>
+          {["Tous","En cours","Planifié","Terminé"].map(f=>(
+            <button key={f} onClick={()=>setFilter(f)} style={{padding:"8px 14px",borderRadius:18,border:`1.5px solid ${filter===f?T.orange:T.border}`,
+              background:filter===f?"rgba(240,122,26,0.18)":"transparent",color:filter===f?T.orangeLt:T.mid,cursor:"pointer",fontWeight:600,fontSize:"0.72rem"}}>
+              {f}
+            </button>
+          ))}
+        </div>
+
+        {/* PROJECTS GRID */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}}>
+          {filtered.map(p=><ProjectCard key={p.id} p={p} onView={setDetail}/>)}
+        </div>
+
+        {filtered.length===0&&<div style={{textAlign:"center",padding:"60px 20px",color:T.dim}}>
+          <div style={{fontSize:"2.5rem",marginBottom:12}}>📋</div>
+          <div>Aucun projet trouvé</div>
+        </div>}
+
+        {/* FOOTER */}
+        <div style={{marginTop:24,padding:"14px 16px",background:`linear-gradient(135deg,rgba(27,75,138,0.1),rgba(124,58,237,0.06))`,border:`1px solid ${T.border}`,borderRadius:12,display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:30,height:30,borderRadius:7,overflow:"hidden",background:"white",flexShrink:0}}>
+            <img src={LOGO} alt="OC" style={{width:"100%",height:"100%",objectFit:"contain"}}/>
+          </div>
+          <div style={{flex:1}}>
+            <div style={{fontWeight:700,fontSize:"0.8rem"}}>O-Project — Opportunities Center</div>
+            <div style={{fontSize:"0.62rem",color:T.dim}}>Congo Brazzaville · opportunitiescenter.pi · GCV 1π=$314,159</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
